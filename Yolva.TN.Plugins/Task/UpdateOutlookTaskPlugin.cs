@@ -45,7 +45,6 @@ namespace Yolva.TN.Plugins.Task
             if (task.Contains("subject"))
             {
                 updateTask.Subject = task["subject"].ToString();
-
             }
             if (task.Contains("description"))
             {
@@ -59,30 +58,23 @@ namespace Yolva.TN.Plugins.Task
             {
                 updateTask.NewTaskOwnerId = ((EntityReference)task["ownerid"]).Id;
             }
-            UpdateTaskInOutlook(updateTask, serviceUrl);
+            //throw new InvalidPluginExecutionException("jjjjj");
 
+            var data = UpdateTaskInOutlook(updateTask, serviceUrl);
         }
 
-        public static string UpdateTaskInOutlook(TaskEntity task, string serviceUrl)
+        public string UpdateTaskInOutlook(TaskEntity task, string serviceUrl)
         {
             var ApiServiceUrl = serviceUrl;
             using (WebClient client = new WebClient())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                client.Encoding = Encoding.UTF8;
                 var jsonObj = JsonConvert.SerializeObject(task);
                 var dataString = client.UploadString(ApiServiceUrl, jsonObj);
-                //var data = JsonConvert.DeserializeObject<TaskEntity>(dataString);
-                return "Success";
+                var data = JsonConvert.DeserializeObject(dataString);
+                return data.ToString();
             }
-        }
-
-        private async void UpdateTaskInOutlook(string crmTaskId, string taskDescription, string taskSubject, string ownerId, string dateEnd)
-        {
-            var client = new HttpClient();
-            string url = "http://azuretaskwebapp.azurewebsites.net/api/task/updatetask/" + crmTaskId + ";" + taskDescription + ";" + taskSubject + ";" + ownerId + ";" + dateEnd + ";";
-
-            var response = await client.GetAsync(url);
-            var content = await response.Content.ReadAsStringAsync();
         }
     }
 }

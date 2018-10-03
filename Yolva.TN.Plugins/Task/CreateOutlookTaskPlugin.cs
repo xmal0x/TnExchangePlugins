@@ -41,7 +41,7 @@ namespace Yolva.TN.Plugins.Task
 
             if (task.Contains("subject"))
             {
-                newTask.Subject = "CRM task: " + task["subject"].ToString();
+                newTask.Subject = "CRM task: " + (string)task["subject"];
             }
             if (task.Contains("description"))
             {
@@ -68,6 +68,7 @@ namespace Yolva.TN.Plugins.Task
             using (WebClient client = new WebClient())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                client.Encoding = Encoding.UTF8;
                 var jsonObj = JsonConvert.SerializeObject(task);
                 var dataString = client.UploadString(ApiServiceUrl, jsonObj);
                 var data = JsonConvert.DeserializeObject(dataString);

@@ -38,6 +38,7 @@ namespace Yolva.TN.Plugins.Task
             using (WebClient client = new WebClient())
             {
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                client.Encoding = Encoding.UTF8;
                 var jsonObj = JsonConvert.SerializeObject(outlookId);
                 var dataString = client.UploadString(ApiServiceUrl, jsonObj);
                 var data = JsonConvert.DeserializeObject(dataString);
