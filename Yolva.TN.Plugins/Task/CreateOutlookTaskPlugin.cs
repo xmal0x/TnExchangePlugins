@@ -23,40 +23,44 @@ namespace Yolva.TN.Plugins.Task
         }
         protected override void ExecuteBusinessLogic(PluginContext pluginContext)
         {
+            
             var task = pluginContext.TargetImageEntity;
             if (task == null)
                 return;
+            TaskEntity newTask = new TaskEntity()
+            {
+                Body = string.Empty,
+                CrmId = task.Id,
+                DuoDate = null,
+                OwnerId = pluginContext.UserId,
+                NewTaskOwnerId = Guid.Empty,
+                OutlookId = string.Empty,
+                Subject = string.Empty,
+                TaskStatus = TaskStatusCode.Open
+            };
 
-            Guid crmId = Guid.Empty;
-            string outlookId = string.Empty;
-            string subject = string.Empty;
-            string body = string.Empty;
-            DateTime duoDate = DateTime.Now;
-            Guid ownerId = Guid.Empty;
-            Guid newTaskOwnerId = Guid.Empty;
-
-
-            crmId = task.Id;
-            ownerId = pluginContext.UserId;
             if (task.Contains("subject"))
             {
-                subject = task["subject"].ToString();
+                newTask.Subject = "CRM task: " + task["subject"].ToString();
             }
             if (task.Contains("description"))
             {
-                body = task["description"].ToString();
+                newTask.Body = task["description"].ToString();
             }
             if (task.Contains("scheduledend"))
             {
-                duoDate = DateTime.Parse(task["scheduledend"].ToString());
+                newTask.DuoDate = DateTime.Parse(task["scheduledend"].ToString());
             }
             if (task.Contains("ownerid"))
             {
-                newTaskOwnerId = ((EntityReference)task["ownerid"]).Id;
+                newTask.NewTaskOwnerId = ((EntityReference)task["ownerid"]).Id;
             }
 
-            CreateTaskInOutlook(new TaskEntity { CrmId = crmId, OutlookId = outlookId, Subject = subject, Body = body, DuoDate = duoDate, OwnerId = ownerId, NewTaskOwnerId = newTaskOwnerId }, serviceUrl);
-
+            var data = CreateTaskInOutlook(newTask, serviceUrl);
+            Entity crmTask = new Entity("task");
+            crmTask.Id = task.Id;
+            crmTask["ylv_outlookid"] = data.Trim('"');
+            pluginContext.OrganizationService.Update(crmTask);
         }
         public static string CreateTaskInOutlook(TaskEntity task, string serviceUrl)
         {
@@ -66,8 +70,8 @@ namespace Yolva.TN.Plugins.Task
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 var jsonObj = JsonConvert.SerializeObject(task);
                 var dataString = client.UploadString(ApiServiceUrl, jsonObj);
-                //var data = JsonConvert.DeserializeObject<TaskEntity>(dataString);
-                return "Success";
+                var data = JsonConvert.DeserializeObject(dataString);
+                return data.ToString();
             }
         }
     }
