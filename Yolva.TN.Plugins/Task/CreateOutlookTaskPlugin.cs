@@ -1,12 +1,8 @@
 ﻿using Microsoft.Xrm.Sdk;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using Yolva.TN.Plugins.BaseClasses;
 using Yolva.TN.Plugins.Common;
 
@@ -14,7 +10,10 @@ namespace Yolva.TN.Plugins.Task
 {
     public class CreateOutlookTaskPlugin : PluginBase
     {
-        private string serviceUrl = "http://azuretaskappweb.azurewebsites.net/api/tasks/CreateTaskInOutlook";
+        /// <summary>
+        /// post operat
+        /// </summary>
+        private string serviceUrl = "https://azuretaskwebapp.azurewebsites.net/api/tasks/CreateTaskInOutlook";
         public CreateOutlookTaskPlugin() : base("", "")
         {
         }
@@ -23,8 +22,10 @@ namespace Yolva.TN.Plugins.Task
         }
         protected override void ExecuteBusinessLogic(PluginContext pluginContext)
         {
-            
+            //throw new InvalidPluginExecutionException("bolt");
             var task = pluginContext.TargetImageEntity;
+            if (!string.IsNullOrEmpty(task.GetAttributeValue<string>("ylv_outlookid")))
+                return;
             if (task == null)
                 return;
             TaskEntity newTask = new TaskEntity()
@@ -51,16 +52,22 @@ namespace Yolva.TN.Plugins.Task
             {
                 newTask.DuoDate = DateTime.Parse(task["scheduledend"].ToString());
             }
+            else
+            {
+                newTask.DuoDate = DateTime.Now.AddDays(1);
+            }
             if (task.Contains("ownerid"))
             {
                 newTask.NewTaskOwnerId = ((EntityReference)task["ownerid"]).Id;
             }
 
             var data = CreateTaskInOutlook(newTask, serviceUrl);
+            //todo j
             Entity crmTask = new Entity("task");
             crmTask.Id = task.Id;
             crmTask["ylv_outlookid"] = data.Trim('"');
             pluginContext.OrganizationService.Update(crmTask);
+            
         }
         public static string CreateTaskInOutlook(TaskEntity task, string serviceUrl)
         {

@@ -13,7 +13,10 @@ namespace Yolva.TN.Plugins.Task
 {
     public class DeleteOutlookTaskPlugin : PluginBase
     {
-        private string serviceUrl = "http://azuretaskappweb.azurewebsites.net/api/tasks/DeleteTaskInOutlook";
+        /// <summary>
+        /// preop
+        /// </summary>
+        private string serviceUrl = "https://azuretaskwebapp.azurewebsites.net/api/tasks/DeleteTaskInOutlook";
         public DeleteOutlookTaskPlugin() : base("", "")
         {
         }

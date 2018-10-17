@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,10 @@ namespace Yolva.TN.Plugins.Task
 {
     public class UpdateOutlookTaskPlugin : PluginBase
     {
-        private string serviceUrl = "http://azuretaskappweb.azurewebsites.net/api/tasks/UpdateTaskInOutlook";
+        /// <summary>
+        /// post operation
+        /// </summary>
+        private string serviceUrl = "https://azuretaskwebapp.azurewebsites.net/api/tasks/UpdateTaskInOutlook";
         public UpdateOutlookTaskPlugin() : base("", "")
         {
         }
@@ -27,40 +31,50 @@ namespace Yolva.TN.Plugins.Task
             if (task == null)
                 return;
 
-            TaskEntity updateTask = new TaskEntity();
-            Entity oldTask = pluginContext.OrganizationService.Retrieve("task", task.Id, new Microsoft.Xrm.Sdk.Query.ColumnSet(true));
-            if (oldTask == null)
+            if (task.Contains("description") || task.Contains("scheduledend") || task.Contains("ownerid"))
             {
-                throw new InvalidPluginExecutionException("Error then try get old task data");
-            }
+                //throw new InvalidPluginExecutionException("" + task.Contains("description") + "\n" + task.Contains("scheduledend") + "\n" + task.Contains("ownerid"));
+                if (pluginContext.PluginExecutionContext.Depth > 1)
+                    throw new InvalidPluginExecutionException("Depth");
 
-            updateTask.CrmId = task.Id;
+                TaskEntity updateTask = new TaskEntity();
+                Entity oldTask = pluginContext.OrganizationService.Retrieve("task", task.Id, new ColumnSet(true));
+                if (oldTask == null)
+                {
+                    throw new InvalidPluginExecutionException("Error then try get old task data");
+                }
 
-            updateTask.Subject = oldTask["subject"].ToString();
-            updateTask.Body = oldTask["description"].ToString();
-            updateTask.DuoDate = DateTime.Parse(oldTask["scheduledend"].ToString());
-            updateTask.NewTaskOwnerId = Guid.Empty;
+                updateTask.CrmId = task.Id;
 
-            //updateTask.OwnerId = pluginContext.UserId;
-            if (task.Contains("subject"))
-            {
-                updateTask.Subject = task["subject"].ToString();
-            }
-            if (task.Contains("description"))
-            {
-                updateTask.Body = task["description"].ToString();
-            }
-            if (task.Contains("scheduledend"))
-            {
-                updateTask.DuoDate = DateTime.Parse(task["scheduledend"].ToString());
-            }
-            if (task.Contains("ownerid"))
-            {
-                updateTask.NewTaskOwnerId = ((EntityReference)task["ownerid"]).Id;
-            }
-            //throw new InvalidPluginExecutionException("jjjjj");
+                updateTask.Subject = oldTask["subject"].ToString();
+                updateTask.Body = oldTask["description"].ToString();
+                updateTask.DuoDate = DateTime.Parse(oldTask["scheduledend"].ToString());
+                updateTask.NewTaskOwnerId = Guid.Empty;
 
-            var data = UpdateTaskInOutlook(updateTask, serviceUrl);
+
+                if (task.Contains("subject"))
+                {
+                    updateTask.Subject = task["subject"].ToString();
+
+                }
+                if (task.Contains("description"))
+                {
+                    updateTask.Body = task["description"].ToString();
+
+                }
+                if (task.Contains("scheduledend"))
+                {
+                    updateTask.DuoDate = DateTime.Parse(task["scheduledend"].ToString());
+
+                }
+                if (task.Contains("ownerid"))
+                {
+                    updateTask.NewTaskOwnerId = ((EntityReference)task["ownerid"]).Id;
+
+                }
+
+                var data = UpdateTaskInOutlook(updateTask, serviceUrl);
+            }
         }
 
         public string UpdateTaskInOutlook(TaskEntity task, string serviceUrl)

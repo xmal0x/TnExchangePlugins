@@ -99,16 +99,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Appointment\CheckExistAppointmentPlugin.cs" />
+    <Compile Include="Appointment\CheckUpdateAppointmentNecessityPlugin.cs" />
     <Compile Include="Appointment\CreateOutlookAppointmentPlugin.cs" />
+    <Compile Include="Appointment\UpdateOutlookAppointmentPlugin.cs" />
     <Compile Include="BaseClasses\PluginBase.cs" />
     <Compile Include="BaseClasses\PluginContext.cs" />
     <Compile Include="BaseClasses\PluginStage.cs" />
     <Compile Include="Common\AppointmentEntity.cs" />
     <Compile Include="Common\IntegrationEntity.cs" />
     <Compile Include="Common\Outlook.cs" />
+    <Compile Include="Common\ResponseType.cs" />
     <Compile Include="Common\TaskEntity.cs" />
     <Compile Include="Common\TaskStatusCode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Task\CheckUpdateTaskNecessityPlugin.cs" />
     <Compile Include="Task\CreateOutlookTaskPlugin.cs" />
     <Compile Include="Task\DeleteOutlookTaskPlugin.cs" />
     <Compile Include="Task\UpdateOutlookTaskPlugin.cs" />
